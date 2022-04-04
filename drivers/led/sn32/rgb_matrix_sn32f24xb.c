@@ -1,5 +1,9 @@
 #include "rgb_matrix.h"
 #include "sn32f24xb.h"
+#include "hal_pwm.h"
+#include "hal_pwm_lld.h"
+#include "hal_pal.h"
+#include "hal_pal_lld.h"
 
 #if !defined(RGB_MATRIX_HUE_STEP)
 #    define RGB_MATRIX_HUE_STEP 8
@@ -115,7 +119,7 @@ void rgb_ch_ctrl(PWMConfig *cfg) {
                 cfg->channels[1].mode = PWM_OUTPUT_ACTIVE_LOW;
                 chan_col_order[i] = 1;
                 break;
-            
+
             case B10:
                 cfg->channels[2].pfpamsk = 1;
             case A2:
@@ -381,7 +385,7 @@ void SN32F24xB_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void SN32F24xB_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
-    for (int i=0; i<DRIVER_LED_TOTAL; i++) {
+    for (int i = 0; i < DRIVER_LED_TOTAL; i++) {
         SN32F24xB_set_color(i, r, g, b);
     }
 }
