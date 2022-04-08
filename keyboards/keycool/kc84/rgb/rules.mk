@@ -39,4 +39,4 @@ RGB_MATRIX_ENABLE = yes
 RGB_MATRIX_DRIVER = SN32F24xB
 
 # project specific files
-SRC = ../../../drivers/led/sn32/matrix_sn32f24xx.c
+SRC += ../../../drivers/led/sn32/matrix_sn32f24xx.c
