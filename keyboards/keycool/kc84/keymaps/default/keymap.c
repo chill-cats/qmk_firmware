@@ -16,6 +16,9 @@
 
 #include QMK_KEYBOARD_H
 
+#define KC_TASK LGUI(KC_TAB)  // Task viewer
+#define KC_FLXP LGUI(KC_E)    // Windows file explorer
+
 enum layer_names { WIN_BASE, WIN_FN };
 
 // clang-format off
