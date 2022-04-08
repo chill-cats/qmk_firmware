@@ -1,0 +1,27 @@
+### Keycook KC84
+An 75% keyboard from Keycool
+## MCU pinout
+
+R0
+G0
+B0
+
+R1
+G1
+B1
+
+R2
+G2
+B2
+
+R3
+G3
+B3
+
+R4
+G4
+B4
+
+R5
+G5
+B5
