@@ -717,7 +717,7 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
 endif
 
 BLUETOOTH_ENABLE ?= no
-VALID_BLUETOOTH_DRIVER_TYPES := AdafruitBLE RN42 custom
+VALID_BLUETOOTH_DRIVER_TYPES := AdafruitBLE RN42 ITON_BT custom
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
         $(error "$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
@@ -737,5 +737,13 @@ ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(strip $(BLUETOOTH_DRIVER)), RN42)
         OPT_DEFS += -DMODULE_RN42
         SRC += $(TMK_DIR)/protocol/serial_uart.c
+    endif
+
+	ifeq ($(strip $(BLUETOOTH_DRIVER)), ITON_BT)
+        OPT_DEFS += -DMODULE_ITON_BT
+        ifneq (, $(filter $(MCU_SERIES), SN32F240B))
+            OPT_DEFS += -DSN32_SPI_SLAVE_MODE -DSN32_SPI_TXFIFO_THRESHOLD=0 -DSN32_SPI_RXFIFO_THRESHOLD=0 -DSN32_SPI0_INTERRUPT_PRIO=0
+        endif
+        SRC += $(DRIVER_PATH)/bluetooth/iton_bt.c
     endif
 endif

@@ -26,3 +26,6 @@ SRC = ../../../drivers/led/sn32/matrix_sn32f24xx.c
 
 # Build ansi by default
 DEFAULT_FOLDER = keychron/k2/rgb/ansi
+
+BLUETOOTH_ENABLE = yes
+BLUETOOTH_DRIVER = ITON_BT
