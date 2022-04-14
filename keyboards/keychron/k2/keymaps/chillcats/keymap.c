@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "rgb_matrix.h"
 #include QMK_KEYBOARD_H
 
 #define KC_MSCR LSFT(LGUI(KC_3))  // Mac screenshot
@@ -112,13 +113,14 @@ layer_state_t layer_state_set_user(layer_state_t layer_state) { return layer_sta
 
 layer_state_t default_layer_state_set_user(layer_state_t default_layer_state) {
     rgb_matrix_enable_noeeprom();
-    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+    rgb_matrix_disable_noeeprom();
+    // rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
     switch (biton32(default_layer_state)) {
         case BASE_DVORAK:
-            rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
+            // rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
             break;
         case BASE_QWERTY:
-            rgb_matrix_sethsv_noeeprom(HSV_CYAN);
+            // rgb_matrix_sethsv_noeeprom(HSV_CYAN);
             break;
     }
     return default_layer_state;
