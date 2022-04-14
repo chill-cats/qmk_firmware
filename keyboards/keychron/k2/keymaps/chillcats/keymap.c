@@ -15,11 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "rgb_matrix.h"
+#include "debug.h"
+#include "keyboard.h"
+#include "print.h"
 #include QMK_KEYBOARD_H
+#include "quantum_keycodes.h"
 
-#define KC_MSCR LSFT(LGUI(KC_3))  // Mac screenshot
-#define KC_MSNP LSFT(LGUI(KC_4))  // Mac snip tool
+#if defined(MODULE_ITON_BT)
+#    include "iton_bt.h"
+#endif
 
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
@@ -27,27 +31,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // entirely and just use numbers.
 enum layer_names {
     BASE_QWERTY,
-    BASE_DVORAK,
     FN,
     FN2,
 };
 
-enum mac_keycode {
+enum custom_keycode {
     KC_MSS_CTRL = SAFE_RANGE,
     KC_LNCH_PAD,
-};
-
-enum prog_dvorak_keycode {
-    KC_PROG_DVK_1 = SAFE_RANGE + 2,
-    KC_PROG_DVK_2,
-    KC_PROG_DVK_3,
-    KC_PROG_DVK_4,
-    KC_PROG_DVK_5,
-    KC_PROG_DVK_6,
-    KC_PROG_DVK_7,
-    KC_PROG_DVK_8,
-    KC_PROG_DVK_9,
-    KC_PROG_DVK_0,
+    BT_PAIR,
+    BT_PRO1,
+    BT_PRO2,
+    BT_PRO3,
 };
 
 // =================== COMBO ===================================
@@ -69,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [BASE_QWERTY] = LAYOUT_75_ansi(
   /*  0           1           2           3             4           5           6           7           8           9           10          11          12          13          14          15       */
-      KC_ESC,     KC_F1,      KC_F2,      KC_F3,        KC_F4,      KC_F5,      KC_F6,      KC_F7,      KC_F8,      KC_F9,      KC_F10,     KC_F11,     KC_F12,     KC_MSCR,    KC_DEL,     KC_NO      ,
+      KC_ESC,     KC_F1,      KC_F2,      KC_F3,        KC_F4,      KC_F5,      KC_F6,      KC_F7,      KC_F8,      KC_F9,      KC_F10,     KC_F11,     KC_F12,     KC_NO,      KC_DEL,     KC_NO      ,
       KC_GRV,     KC_1,       KC_2,       KC_3,         KC_4,       KC_5,       KC_6,       KC_7,       KC_8,       KC_9,       KC_0,       KC_MINS,    KC_EQL,     KC_BSPC,                KC_PGUP    ,
       KC_TAB,     KC_Q,       KC_W,       KC_E,         KC_R,       KC_T,       KC_Y,       KC_U,       KC_I,       KC_O,       KC_P,       KC_LBRC,    KC_RBRC,    KC_BSLS,                KC_PGDN    ,
       KC_ESC,     KC_A,       KC_S,       KC_D,         KC_F,       KC_G,       KC_H,       KC_J,       KC_K,       KC_L,       KC_SCLN,    KC_QUOT,                KC_ENT,                 KC_HOME    ,
@@ -77,20 +71,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_LCTL,    KC_LALT,    KC_LGUI,                                          KC_SPC,                                         KC_RGUI,    MO(FN),     MO(FN2),    KC_LEFT,    KC_DOWN,    KC_RGHT
   ),
 
-  [BASE_DVORAK] = LAYOUT_75_ansi(
-  /*  0           1           2           3             4           5           6           7           8           9           10          11          12          13          14          15       */
-      KC_ESC,     KC_F1,      KC_F2,      KC_F3,        KC_F4,      KC_F5,      KC_F6,      KC_F7,      KC_F8,      KC_F9,      KC_F10,     KC_F11,     KC_F12,     KC_MSCR,    KC_DEL,     KC_NO      ,
-      KC_DOLLAR,  KC_AMPR,    KC_LBRC,    KC_LCBR,      KC_RCBR,    KC_LPRN,    KC_EQUAL,   KC_ASTR,    KC_RPRN,    KC_PLUS,    KC_RBRC,    KC_EXCLAIM, KC_HASH,    KC_BSPC,                KC_PGUP    ,
-      KC_TAB,     KC_SCLN,    KC_COMMA,   KC_DOT,       KC_P,       KC_Y,       KC_F,       KC_G,       KC_C,       KC_R,       KC_L,       KC_SLASH,   KC_AT,      KC_BSLS,                KC_PGDN    ,
-      KC_ESC,     KC_A,       KC_O,       KC_E,         KC_U,       KC_I,       KC_D,       KC_H,       KC_T,       KC_N,       KC_S,       KC_MINS,                KC_ENT,                 KC_HOME    ,
-      KC_LSFT,                KC_QUOTE,   KC_Q,         KC_J,       KC_K,       KC_X,       KC_B,       KC_M,       KC_W,       KC_V,       KC_Z,                   KC_RSFT,    KC_UP,      KC_END     ,
-      KC_LCTL,    KC_LALT,    KC_LGUI,                                          KC_SPC,                                         KC_RGUI,    MO(FN),     MO(FN2),    KC_LEFT,    KC_DOWN,    KC_RGHT
-  ),
-
   [FN] = LAYOUT_75_ansi(
   /*  0           1           2           3             4           5           6           7           8           9           10          11          12          13          14          15       */
-      RESET,      KC_BRID,    KC_BRIU,    KC_MSS_CTRL,  KC_LNCH_PAD,RGB_VAD,    RGB_VAI,    KC_MPRV,    KC_MPLY,    KC_MNXT,    KC_MUTE,    KC_VOLD,    KC_VOLU,    KC_MSNP,    KC_INS,     _______    ,
-      _______,    _______,    _______,    _______,      _______,    _______,    _______,    _______,    _______,    _______,    _______,    KC_VOLD,    KC_VOLU,    _______,                _______    ,
+      RESET,      KC_BRID,    KC_BRIU,    KC_MSS_CTRL,  KC_LNCH_PAD,RGB_VAD,    RGB_VAI,    KC_MPRV,    KC_MPLY,    KC_MNXT,    KC_MUTE,    KC_VOLD,    KC_VOLU,    _______,    KC_INS,     _______    ,
+      BT_PAIR,    BT_PRO1,    BT_PRO2,    BT_PRO3,      _______,    _______,    _______,    _______,    _______,    _______,    _______,    KC_VOLD,    KC_VOLU,    _______,                _______    ,
       _______,    _______,    KC_UP,      _______,      _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,                _______    ,
       _______,    KC_LEFT,    KC_DOWN,    KC_RIGHT,     _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,                _______,                _______    ,
       _______,                _______,    _______,      _______,    _______,    _______,    _______,    KC_MUTE,    _______,    _______,    _______,                _______,    RGB_SAI,    _______    ,
@@ -109,30 +93,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
-layer_state_t layer_state_set_user(layer_state_t layer_state) { return layer_state; }
-
-layer_state_t default_layer_state_set_user(layer_state_t default_layer_state) {
-    rgb_matrix_enable_noeeprom();
-    rgb_matrix_disable_noeeprom();
-    // rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-    switch (biton32(default_layer_state)) {
-        case BASE_DVORAK:
-            // rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
-            break;
-        case BASE_QWERTY:
-            // rgb_matrix_sethsv_noeeprom(HSV_CYAN);
-            break;
-    }
-    return default_layer_state;
-}
-
 bool dip_switch_update_user(uint8_t index, bool active) {
     switch (index) {
-        case 0:                                       // keymap switch
-            if (active) {                             // dvorak
-                default_layer_set(1 << BASE_QWERTY);  // default layer is indicated by nth bit in the layer mask
-            } else {                                  // qwerty
-                default_layer_set(1 << BASE_DVORAK);
+        case 0:            // keymap switch
+            if (active) {  // dvorak
+            } else {       // qwerty
             }
             break;
         case 1:  // Connection switch
@@ -145,6 +110,12 @@ bool dip_switch_update_user(uint8_t index, bool active) {
             break;
     }
     return true;
+}
+
+void keyboard_post_init_user() {
+    debug_matrix   = 1;
+    debug_keyboard = 1;
+    debug_enable   = 1;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -163,6 +134,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 host_consumer_send(0x000);
             }
             return false;
+        case BT_PAIR:
+#ifdef MODULE_ITON_BT
+            iton_bt_enter_pairing();
+            print("Start pairing!");
+#endif
+            break;
+        case BT_PRO1:
+#ifdef MODULE_ITON_BT
+            iton_bt_switch_profile(0);
+            print("Switch profile 1!");
+#endif
+            break;
+        case BT_PRO2:
+#ifdef MODULE_ITON_BT
+            iton_bt_switch_profile(1);
+            print("Switch profile 2!");
+#endif
+            break;
+        case BT_PRO3:
+#ifdef MODULE_ITON_BT
+            iton_bt_switch_profile(2);
+            print("Switch profile 3!");
+#endif
+            break;
+        default:
+            break;
     }
     return true;
 }

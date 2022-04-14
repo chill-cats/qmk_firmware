@@ -49,6 +49,17 @@
 extern keymap_config_t keymap_config;
 #endif
 
+#ifdef BLUETOOTH_ENABLE
+#    include "outputselect.h"
+#    ifdef MODULE_ADAFRUIT_BLE
+#        include "adafruit_ble.h"
+#    elif MODULE_RN42
+#        include "rn42.h"
+#    elif MODULE_ITON_BT
+#        include "iton_bt.h"
+#    endif
+#endif
+
 #ifdef JOYSTICK_ENABLE
 #    include "joystick.h"
 #endif
@@ -109,7 +120,7 @@ static const USBDescriptor *usb_get_descriptor_cb(USBDriver *usbp, uint8_t dtype
     static USBDescriptor desc;
     uint16_t             wValue = ((uint16_t)dtype << 8) | dindex;
     desc.ud_string              = NULL;
-    desc.ud_size                = get_usb_descriptor(wValue, wIndex, (const void **const) & desc.ud_string);
+    desc.ud_size                = get_usb_descriptor(wValue, wIndex, (const void **const)&desc.ud_string);
     if (desc.ud_string == NULL)
         return NULL;
     else
@@ -340,10 +351,10 @@ static usb_driver_configs_t drivers = {
 #endif
 #ifdef RAW_ENABLE
 #    ifndef RAW_IN_CAPACITY
-#       define RAW_IN_CAPACITY 4
+#        define RAW_IN_CAPACITY 4
 #    endif
 #    ifndef RAW_OUT_CAPACITY
-#       define RAW_OUT_CAPACITY 4
+#        define RAW_OUT_CAPACITY 4
 #    endif
 #    define RAW_IN_MODE USB_EP_MODE_TYPE_INTR
 #    define RAW_OUT_MODE USB_EP_MODE_TYPE_INTR
@@ -655,8 +666,8 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
                         break;
 
                     case HID_SET_IDLE:
-                        //keyboard_idle = usbp->setup[3]; /* MSB(wValue) */
-                                                        /* arm the timer */
+                        // keyboard_idle = usbp->setup[3]; /* MSB(wValue) */
+                        /* arm the timer */
 #ifdef NKRO_ENABLE
                         if (!keymap_config.nkro && keyboard_idle) {
 #else  /* NKRO_ENABLE */
@@ -819,11 +830,32 @@ static void keyboard_idle_timer_cb(void *arg) {
 }
 
 /* LED status */
-uint8_t keyboard_leds(void) { return keyboard_led_state; }
+// uint8_t keyboard_leds(void) { return keyboard_led_state; }
+uint8_t keyboard_leds(void) {
+#if defined(BLUETOOTH_ENABLE) && defined(MODULE_ITON_BT)
+    if (where_to_send() == OUTPUT_BLUETOOTH) {
+        return iton_bt_keyboard_led_state;
+    }
+#endif
+    return keyboard_led_state;
+}
 
 /* prepare and start sending a report IN
  * not callable from ISR or locked state */
 void send_keyboard(report_keyboard_t *report) {
+#ifdef BLUETOOTH_ENABLE
+    if (where_to_send() == OUTPUT_BLUETOOTH) {
+#    ifdef MODULE_ADAFRUIT_BLE
+        adafruit_ble_send_keys(report->mods, report->keys, sizeof(report->keys));
+#    elif MODULE_RN42
+        rn42_send_keyboard(report);
+#    elif MODULE_ITON_BT
+        iton_bt_send_keyboard(report);
+#    endif
+        return;
+    }
+#endif
+
     osalSysLock();
     if (usbGetDriverStateI(&USB_DRIVER) != USB_ACTIVE) {
         goto unlock;
@@ -969,12 +1001,28 @@ static void send_extra(uint8_t report_id, uint16_t data) {
 
 void send_system(uint16_t data) {
 #ifdef EXTRAKEY_ENABLE
+#    ifdef BLUETOOTH_ENABLE
+    if (where_to_send() == OUTPUT_BLUETOOTH) {
+#        if MODULE_ITON_BT
+        iton_bt_send_system(data);
+#        endif
+        return;
+    }
+#    endif
     send_extra(REPORT_ID_SYSTEM, data);
 #endif
 }
 
 void send_consumer(uint16_t data) {
 #ifdef EXTRAKEY_ENABLE
+#    ifdef BLUETOOTH_ENABLE
+    if (where_to_send() == OUTPUT_BLUETOOTH) {
+#        if MODULE_ITON_BT
+        iton_bt_send_consumer(data);
+#        endif
+        return;
+    }
+#    endif
     send_extra(REPORT_ID_CONSUMER, data);
 #endif
 }

@@ -65,6 +65,17 @@ void    send_digitizer(report_digitizer_t *report);
 /* host struct */
 host_driver_t chibios_driver = {keyboard_leds, send_keyboard, send_mouse, send_system, send_consumer};
 
+#ifdef BLUETOOTH_ENABLE
+#    include "outputselect.h"
+#    ifdef MODULE_ADAFRUIT_BLE
+#        include "adafruit_ble.h"
+#    elif MODULE_RN42
+#        include "rn42.h"
+#    elif MODULE_ITON_BT
+#        include "iton_bt.h"
+#    endif
+#endif
+
 #ifdef VIRTSER_ENABLE
 void virtser_task(void);
 #endif
@@ -149,6 +160,10 @@ void protocol_pre_init(void) {
 
 #ifdef MIDI_ENABLE
     setup_midi();
+#endif
+
+#if defined(BLUETOOTH_ENABLE) && defined(MODULE_ITON_BT)
+    iton_bt_init();
 #endif
 
     /* Wait until USB is active */
